@@ -88,7 +88,7 @@ const state = {
   sortBy: 'name',
   sortDir: 'asc',
   page: 1,
-  limit: 24,
+  limit: 25,
   view: 'grid',
   activeEditingId: null,
   activeSeasonItem: null,
@@ -684,8 +684,9 @@ function renderPagination(total, page, totalPages) {
   elements.paginationNumbers.innerHTML = '';
   if (totalPages <= 1) return;
 
-  const maxButtons = 5;
-  let start = Math.max(1, page - 2);
+  const isMobile = window.innerWidth < 640;
+  const maxButtons = isMobile ? 3 : 5;
+  let start = Math.max(1, page - Math.floor(maxButtons / 2));
   let end = Math.min(totalPages, start + maxButtons - 1);
   if (end - start < maxButtons - 1) {
     start = Math.max(1, end - maxButtons + 1);
