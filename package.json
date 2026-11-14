@@ -1,0 +1,31 @@
+{
+  "name": "unified-media-tracker",
+  "version": "2.0.0",
+  "description": "Modern full-stack media tracker for Anime, Movies, and TV series with season progress tracking, SQLite database, and lucky decision spinner.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "import": "python scripts/import_excel.py",
+    "test": "node test/model.test.js"
+  },
+  "keywords": [
+    "media-tracker",
+    "anime-tracker",
+    "movie-tracker",
+    "sqlite",
+    "express",
+    "season-progress",
+    "lucky-wheel"
+  ],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.2.0",
+    "express": "^5.3.0"
+  }
+}

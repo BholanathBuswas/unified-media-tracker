@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unified Media Tracker - Anime, Movies & Shows</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    tailwind.config = {
+      darkMode: ['selector', '[data-theme="dark"]'],
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- ==================== HEADER & NAVBAR ==================== -->
+  <header class="sticky top-0 z-40 glass-panel border-b border-[var(--border-subtle)]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 gap-4">
+        
+        <!-- App Logo & Title -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white">
+            <i data-lucide="clapperboard" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-lg font-bold font-display tracking-tight text-[var(--text-primary)]">Media Tracker</h1>
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">PRO</span>
+            </div>
+            <p class="text-xs text-[var(--text-muted)] hidden sm:block">Unified Library & Season Progress</p>
+          </div>
+        </div>
+
+        <!-- Center Category Switcher Tabs -->
+        <nav class="hidden md:flex items-center p-1 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)]" aria-label="Category Navigation">
+          <button type="button" class="category-tab active px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5" data-category="All">
+            <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+            <span>All Media</span>
+          </button>
+          <button type="button" class="category-tab px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5" data-category="Anime">
+            <i data-lucide="tv" class="w-3.5 h-3.5"></i>
+            <span>Anime</span>
+          </button>
+          <button type="button" class="category-tab px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5" data-category="Movie">
+            <i data-lucide="film" class="w-3.5 h-3.5"></i>
+            <span>Movies & Shows</span>
+          </button>
+          <button type="button" class="category-tab px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5" data-category="Hentai">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span>Hentai</span>
+          </button>
+          <button type="button" class="category-tab px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5" data-category="Favorites">
+            <i data-lucide="heart" class="w-3.5 h-3.5 text-rose-500"></i>
+            <span>Favorites</span>
+          </button>
+        </nav>
+
+        <!-- Right Header Actions -->
+        <div class="flex items-center gap-2">
+          
+          <!-- Lucky Wheel Action Button -->
+          <button type="button" id="btn-open-wheel" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border border-amber-500/25 transition-colors flex items-center gap-1.5" title="Spin Lucky Wheel to Pick What to Watch" aria-label="Open Lucky Wheel">
+            <i data-lucide="dices" class="w-4 h-4 text-amber-500"></i>
+            <span class="hidden sm:inline">Lucky Wheel</span>
+          </button>
+
+          <!-- Add Entry Button -->
+          <button type="button" id="btn-add-media" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/30 transition-colors flex items-center gap-1.5" aria-label="Add New Media Entry">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Add Entry</span>
+          </button>
+
+          <!-- More Options Menu (Backup / Import / Theme) -->
+          <button type="button" id="btn-backup-modal" class="p-2 rounded-lg bg-[var(--bg-surface-elevated)] hover:bg-[var(--bg-surface-hover)] text-[var(--text-secondary)] border border-[var(--border-subtle)] transition-colors" title="Export / Import Backups" aria-label="Backup and Import Options">
+            <i data-lucide="download" class="w-4 h-4"></i>
+          </button>
+
+          <!-- Theme Toggle Button -->
+          <button type="button" id="btn-theme-toggle" class="p-2 rounded-lg bg-[var(--bg-surface-elevated)] hover:bg-[var(--bg-surface-hover)] text-[var(--text-secondary)] border border-[var(--border-subtle)] transition-colors" title="Toggle Theme" aria-label="Toggle Dark and Light Mode">
+            <i data-lucide="moon" id="theme-icon" class="w-4 h-4"></i>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Mobile Category Navigation Bar -->
+      <div class="flex md:hidden overflow-x-auto py-2 gap-1 border-t border-[var(--border-subtle)] no-scrollbar" aria-label="Mobile Category Navigation">
+        <button type="button" class="category-tab active whitespace-nowrap px-3 py-1 text-xs font-semibold rounded-md" data-category="All">All</button>
+        <button type="button" class="category-tab whitespace-nowrap px-3 py-1 text-xs font-semibold rounded-md" data-category="Anime">Anime</button>
+        <button type="button" class="category-tab whitespace-nowrap px-3 py-1 text-xs font-semibold rounded-md" data-category="Movie">Movies</button>
+        <button type="button" class="category-tab whitespace-nowrap px-3 py-1 text-xs font-semibold rounded-md" data-category="Hentai">Hentai</button>
+        <button type="button" class="category-tab whitespace-nowrap px-3 py-1 text-xs font-semibold rounded-md" data-category="Favorites">Favorites</button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ==================== MAIN CONTENT CONTAINER ==================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Metrics / Analytics Overview Bar -->
+    <section aria-label="Media Statistics Overview" class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+      
+      <!-- Total Items Card -->
+      <div class="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-[var(--text-muted)]">Total Media</span>
+          <div class="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+            <i data-lucide="film" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span id="stat-total" class="text-2xl font-bold font-display text-[var(--text-primary)]">--</span>
+          <span id="stat-category-name" class="text-xs text-[var(--text-muted)]">Items in DB</span>
+        </div>
+      </div>
+
+      <!-- Currently Watching Card -->
+      <div class="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-[var(--text-muted)]">In Progress</span>
+          <div class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center">
+            <i data-lucide="play-circle" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span id="stat-watching" class="text-2xl font-bold font-display text-amber-500">--</span>
+          <span class="text-xs text-[var(--text-muted)]">Watching now</span>
+        </div>
+      </div>
+
+      <!-- Completed Items Card -->
+      <div class="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-[var(--text-muted)]">Completed</span>
+          <div class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+            <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span id="stat-completed" class="text-2xl font-bold font-display text-emerald-500">--</span>
+          <span id="stat-completion-pct" class="text-xs text-emerald-500 font-semibold">(0%)</span>
+        </div>
+      </div>
+
+      <!-- Favorites Card -->
+      <div class="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-[var(--text-muted)]">Bookmarked</span>
+          <div class="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center">
+            <i data-lucide="bookmark" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span id="stat-favorites" class="text-2xl font-bold font-display text-rose-400">--</span>
+          <span class="text-xs text-[var(--text-muted)]">Favorites</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== SEARCH, FILTER & TOOLBAR ==================== -->
+    <section aria-label="Filters and Search Controls" class="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] shadow-sm space-y-3">
+      
+      <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+        
+        <!-- Search Input -->
+        <div class="relative flex-1">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--text-muted)]">
+            <i data-lucide="search" class="w-4 h-4"></i>
+          </div>
+          <input 
+            type="search" 
+            id="search-input" 
+            placeholder="Search by title, original name, year, tags, notes… (Press '/' to focus)" 
+            autocomplete="off"
+            spellcheck="false"
+            class="w-full pl-9 pr-8 py-2 text-sm rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-indigo-500 transition-colors"
+          >
+          <button type="button" id="search-clear-btn" class="absolute inset-y-0 right-0 pr-3 hidden items-center text-[var(--text-muted)] hover:text-[var(--text-primary)]" aria-label="Clear Search">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Filter Dropdowns Group -->
+        <div class="flex flex-wrap items-center gap-2">
+          
+          <!-- Type Filter -->
+          <select id="filter-type" class="px-3 py-2 text-xs font-medium rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] focus:outline-none focus:border-indigo-500" aria-label="Filter by Media Type">
+            <option value="All">All Types</option>
+          </select>
+
+          <!-- Status Filter -->
+          <select id="filter-status" class="px-3 py-2 text-xs font-medium rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] focus:outline-none focus:border-indigo-500" aria-label="Filter by Watch Status">
+            <option value="All">All Statuses</option>
+            <option value="Plan to Watch">Plan to Watch</option>
+            <option value="Watching">Currently Watching</option>
+            <option value="Completed">Completed</option>
+          </select>
+
+          <!-- Sort Key Dropdown -->
+          <select id="sort-key" class="px-3 py-2 text-xs font-medium rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] focus:outline-none focus:border-indigo-500" aria-label="Sort Records By">
+            <option value="name">Sort: Title (A-Z)</option>
+            <option value="year">Sort: Year</option>
+            <option value="seasons">Sort: Seasons</option>
+            <option value="rating">Sort: Rating</option>
+            <option value="created">Sort: Recently Added</option>
+            <option value="updated">Sort: Recently Updated</option>
+          </select>
+
+          <!-- Sort Direction Toggle -->
+          <button type="button" id="btn-sort-dir" class="p-2 rounded-lg bg-[var(--bg-surface-elevated)] hover:bg-[var(--bg-surface-hover)] text-[var(--text-secondary)] border border-[var(--border-subtle)] transition-colors" title="Toggle Sort Order (Ascending / Descending)" aria-label="Toggle Sort Direction">
+            <i data-lucide="arrow-down-up" class="w-4 h-4"></i>
+          </button>
+
+          <!-- View Mode Toggle (Grid vs Table) -->
+          <div class="flex items-center p-1 rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)]">
+            <button type="button" id="btn-view-grid" class="view-toggle-btn active p-1.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors" title="Grid View" aria-label="Switch to Card Grid View">
+              <i data-lucide="layout-grid" class="w-4 h-4"></i>
+            </button>
+            <button type="button" id="btn-view-table" class="view-toggle-btn p-1.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors" title="Table View" aria-label="Switch to Compact Table View">
+              <i data-lucide="table-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Active Filters & Result Counter Bar -->
+      <div class="flex items-center justify-between text-xs text-[var(--text-muted)] pt-1 border-t border-[var(--border-subtle)]">
+        <div>
+          <span>Showing <strong id="count-display" class="text-[var(--text-primary)]">0</strong> entries</span>
+          <span id="active-filter-text" class="ml-2 italic text-[var(--text-secondary)]"></span>
+        </div>
+        <button type="button" id="btn-reset-filters" class="hidden text-indigo-400 hover:text-indigo-300 font-semibold underline" aria-label="Reset All Filters">
+          Reset Filters
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ==================== MEDIA DISPLAY CONTAINER ==================== -->
+    <div id="media-container" class="min-h-[400px]">
+      
+      <!-- Loading Skeleton Indicator -->
+      <div id="loading-state" class="py-16 flex flex-col items-center justify-center text-[var(--text-muted)] space-y-3">
+        <div class="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-sm">Loading media library…</p>
+      </div>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="hidden py-16 flex flex-col items-center justify-center text-center p-6 rounded-2xl border border-dashed border-[var(--border-subtle)] bg-[var(--bg-surface)]">
+        <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-4">
+          <i data-lucide="folder-search" class="w-8 h-8"></i>
+        </div>
+        <h3 class="text-base font-bold text-[var(--text-primary)]">No media records found</h3>
+        <p class="text-xs text-[var(--text-muted)] max-w-sm mt-1">Try adjusting your search keywords, clearing your filters, or adding a new title to your library.</p>
+        <button type="button" onclick="document.getElementById('btn-add-media').click()" class="mt-4 px-4 py-2 text-xs font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition-colors">
+          Add New Media
+        </button>
+      </div>
+
+      <!-- View 1: Card Grid View -->
+      <div id="grid-view" class="hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+
+      <!-- View 2: Compact Data Table View -->
+      <div id="table-view" class="hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left data-table border-collapse">
+            <thead>
+              <tr>
+                <th class="w-12 text-center">#</th>
+                <th>Title / Native Name</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th>Seasons & Quick Progress</th>
+                <th>Year</th>
+                <th>Status</th>
+                <th>Rating</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              <!-- Rendered dynamically by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==================== PAGINATION BAR ==================== -->
+    <nav aria-label="Pagination" class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)]">
+      <div class="text-xs text-[var(--text-muted)]">
+        Page <span id="current-page-display" class="font-bold text-[var(--text-primary)]">1</span> of <span id="total-pages-display" class="font-bold text-[var(--text-primary)]">1</span>
+      </div>
+
+      <div class="flex items-center gap-1">
+        <button type="button" id="btn-page-first" class="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-[var(--bg-surface-elevated)] hover:bg-[var(--bg-surface-hover)] disabled:opacity-30 disabled:pointer-events-none transition-colors" title="First Page" aria-label="Go to First Page">
+          <i data-lucide="chevrons-left" class="w-3.5 h-3.5"></i>
+        </button>
+        <button type="button" id="btn-page-prev" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--bg-surface-elevated)] hover:bg-[var(--bg-surface-hover)] disabled:opacity-30 disabled:pointer-events-none transition-colors flex items-center gap-1" aria-label="Go to Previous Page">
+          <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+          <span>Prev</span>
+        </button>
+        <div id="pagination-numbers" class="flex items-center gap-1">
+          <!-- Dynamic page buttons -->
+        </div>
+        <button type="button" id="btn-page-next" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--bg-surface-elevated)] hover:bg-[var(--bg-surface-hover)] disabled:opacity-30 disabled:pointer-events-none transition-colors flex items-center gap-1" aria-label="Go to Next Page">
+          <span>Next</span>
+          <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+        </button>
+        <button type="button" id="btn-page-last" class="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-[var(--bg-surface-elevated)] hover:bg-[var(--bg-surface-hover)] disabled:opacity-30 disabled:pointer-events-none transition-colors" title="Last Page" aria-label="Go to Last Page">
+          <i data-lucide="chevrons-right" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-2 text-xs text-[var(--text-muted)]">
+        <span>Rows per page:</span>
+        <select id="items-per-page" class="px-2 py-1 rounded bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)]" aria-label="Select Items Per Page">
+          <option value="24">24</option>
+          <option value="48">48</option>
+          <option value="96">96</option>
+          <option value="200">200</option>
+        </select>
+      </div>
+    </nav>
+
+  </main>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="mt-auto border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] py-6 text-center text-xs text-[var(--text-muted)]">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-[var(--text-secondary)]">Unified Media Tracker</span>
+        <span>•</span>
+        <span>Node.js & SQLite Edition</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <button type="button" id="btn-shortcuts-modal" class="hover:text-[var(--text-primary)] underline">Keyboard Shortcuts</button>
+        <span>•</span>
+        <span>Fast, Offline-Ready & Self-Hosted</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- 1. ADD / EDIT MEDIA MODAL -->
+  <div id="media-modal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-xl p-6 animate-in space-y-5">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
+        <div class="flex items-center gap-2">
+          <div id="modal-icon-container" class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+          </div>
+          <h2 id="modal-title" class="text-base font-bold text-[var(--text-primary)]">Add New Media</h2>
+        </div>
+        <button type="button" class="btn-close-modal p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-elevated)] transition-colors" aria-label="Close Modal">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Form -->
+      <form id="media-form" class="space-y-4">
+        <input type="hidden" id="entry-id">
+
+        <!-- Category & Type Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label for="entry-category" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Category *</label>
+            <select id="entry-category" required class="w-full px-3 py-2 text-xs rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] focus:outline-none focus:border-indigo-500">
+              <option value="Anime">Anime</option>
+              <option value="Movie">Movie / TV Show</option>
+              <option value="Hentai">Hentai</option>
+            </select>
+          </div>
+          <div>
+            <label for="entry-type" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Sub-Type / Format *</label>
+            <select id="entry-type" required class="w-full px-3 py-2 text-xs rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] focus:outline-none focus:border-indigo-500">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Title Input with Live Duplicate Warning -->
+        <div class="relative">
+          <label for="entry-name" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Primary Title *</label>
+          <input 
+            type="text" 
+            id="entry-name" 
+            required 
+            placeholder="e.g. Spirited Away, Interstellar, Game of Thrones" 
+            class="w-full px-3 py-2 text-sm rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] focus:outline-none focus:border-indigo-500"
+          >
+          <div id="duplicate-warning" class="hidden p-2.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs mt-1.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5">
+              <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 flex-shrink-0"></i>
+              <span id="duplicate-warning-text">Duplicate Detected: This title already exists in this category.</span>
+            </div>
+            <button type="button" id="btn-view-duplicate" class="px-2.5 py-1 text-[11px] font-bold rounded bg-amber-500/25 hover:bg-amber-500/35 text-amber-200 border border-amber-500/40 transition-colors whitespace-nowrap">
+              Edit Existing Entry
+            </button>
+          </div>
+        </div>
+
+        <!-- Alt / Native Title Input -->
+        <div>
+          <label for="entry-alt-name" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Native / Alternate Title (Optional)</label>
+          <input 
+            type="text" 
+            id="entry-alt-name" 
+            placeholder="e.g. 千と千尋の神隠し, 기생충, দহন, دنگل" 
+            class="w-full px-3 py-2 text-sm rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] focus:outline-none focus:border-indigo-500"
+          >
+        </div>
+
+        <!-- Seasons, Year & Rating Row -->
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label for="entry-seasons" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Total Seasons</label>
+            <input 
+              type="number" 
+              id="entry-seasons" 
+              min="1" 
+              max="50" 
+              value="1" 
+              required 
+              class="w-full px-3 py-2 text-xs rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] focus:outline-none focus:border-indigo-500"
+            >
+          </div>
+          <div>
+            <label for="entry-year" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Release Year</label>
+            <input 
+              type="text" 
+              id="entry-year" 
+              placeholder="e.g. 2024 or N/A" 
+              value="N/A" 
+              class="w-full px-3 py-2 text-xs rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] focus:outline-none focus:border-indigo-500"
+            >
+          </div>
+          <div>
+            <label for="entry-rating" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Rating (1-10)</label>
+            <input 
+              type="number" 
+              id="entry-rating" 
+              min="0" 
+              max="10" 
+              step="0.5" 
+              value="0" 
+              class="w-full px-3 py-2 text-xs rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] focus:outline-none focus:border-indigo-500"
+            >
+          </div>
+        </div>
+
+        <!-- Season Watched Checklist Box -->
+        <div class="p-3 rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-[var(--text-secondary)]">Season Watched Status</span>
+            <div class="flex items-center gap-2">
+              <button type="button" id="btn-modal-mark-all" class="text-[11px] font-semibold text-emerald-400 hover:underline">Mark All</button>
+              <span class="text-xs text-[var(--text-muted)]">•</span>
+              <button type="button" id="btn-modal-clear-all" class="text-[11px] font-semibold text-[var(--text-muted)] hover:underline">Clear All</button>
+            </div>
+          </div>
+          <div id="modal-seasons-container" class="flex flex-wrap gap-2 pt-1 max-h-32 overflow-y-auto">
+            <!-- Dynamic season check chips -->
+          </div>
+        </div>
+
+        <!-- Platform & Tags Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label for="entry-platform" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Platform / Source</label>
+            <input 
+              type="text" 
+              id="entry-platform" 
+              placeholder="e.g. Netflix, Crunchyroll, Local, BluRay" 
+              class="w-full px-3 py-2 text-xs rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] focus:outline-none focus:border-indigo-500"
+            >
+          </div>
+          <div>
+            <label for="entry-poster-url" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Poster Image URL (Optional)</label>
+            <input 
+              type="url" 
+              id="entry-poster-url" 
+              placeholder="https://image.tmdb.org/…" 
+              class="w-full px-3 py-2 text-xs rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] focus:outline-none focus:border-indigo-500"
+            >
+          </div>
+        </div>
+
+        <!-- Notes / Review -->
+        <div>
+          <label for="entry-notes" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Personal Notes / Review</label>
+          <textarea 
+            id="entry-notes" 
+            rows="2" 
+            placeholder="Add personal review, episode notes, streaming links…" 
+            class="w-full px-3 py-2 text-xs rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] focus:outline-none focus:border-indigo-500"
+          ></textarea>
+        </div>
+
+        <!-- Modal Submit Actions -->
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-[var(--border-subtle)]">
+          <button type="button" class="btn-close-modal px-4 py-2 text-xs font-semibold rounded-lg text-[var(--text-muted)] hover:bg-[var(--bg-surface-elevated)] transition-colors">
+            Cancel
+          </button>
+          <button type="submit" id="btn-save-entry" class="px-5 py-2 text-xs font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/30 transition-colors flex items-center gap-1.5">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span id="save-btn-text">Save Entry</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. QUICK SEASON PROGRESS MODAL -->
+  <div id="season-modal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-md p-6 animate-in space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
+        <div>
+          <h2 class="text-sm font-bold text-[var(--text-primary)] flex items-center gap-1.5">
+            <i data-lucide="check-square" class="w-4 h-4 text-emerald-500"></i>
+            <span>Season Tracker</span>
+          </h2>
+          <p id="season-modal-item-name" class="text-xs text-indigo-400 font-semibold truncate max-w-xs mt-0.5">Media Title</p>
+        </div>
+        <button type="button" class="btn-close-season-modal p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-elevated)]" aria-label="Close Season Modal">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Progress Meter -->
+      <div class="space-y-1.5">
+        <div class="flex justify-between text-xs text-[var(--text-secondary)]">
+          <span>Completion Progress</span>
+          <span id="season-modal-progress-text" class="font-bold text-emerald-400">0%</span>
+        </div>
+        <div class="w-full h-2 rounded-full bg-[var(--bg-surface-elevated)] overflow-hidden">
+          <div id="season-modal-progress-bar" class="h-full bg-emerald-500 transition-all duration-300 w-0"></div>
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="flex items-center justify-between py-1 border-y border-[var(--border-subtle)]">
+        <span class="text-xs text-[var(--text-muted)]">Toggle each season watched:</span>
+        <div class="flex items-center gap-2">
+          <button type="button" id="btn-quick-mark-all" class="text-xs font-semibold text-emerald-400 hover:underline">All Watched</button>
+          <span class="text-xs text-[var(--text-muted)]">•</span>
+          <button type="button" id="btn-quick-clear-all" class="text-xs font-semibold text-[var(--text-muted)] hover:underline">Reset</button>
+        </div>
+      </div>
+
+      <!-- Season Checkbox Grid -->
+      <div id="season-modal-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-60 overflow-y-auto p-1">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="pt-3 border-t border-[var(--border-subtle)] flex justify-end">
+        <button type="button" id="btn-season-modal-done" class="px-5 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. LUCKY WHEEL ("WHAT TO WATCH?") MODAL -->
+  <div id="wheel-modal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-lg p-6 animate-in space-y-4">
+      
+      <!-- Wheel Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-500 flex items-center justify-center">
+            <i data-lucide="dices" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h2 class="text-base font-bold text-[var(--text-primary)]">Lucky Decision Wheel</h2>
+            <p class="text-xs text-[var(--text-muted)]">Can't decide? Let fate choose your next watch!</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close-wheel-modal p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-elevated)]" aria-label="Close Wheel Modal">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Wheel Filter Controls -->
+      <div class="flex flex-wrap items-center gap-2 text-xs">
+        <select id="wheel-category" class="px-2.5 py-1.5 rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)]">
+          <option value="All">All Categories</option>
+          <option value="Anime">Anime Only</option>
+          <option value="Movie">Movies Only</option>
+          <option value="Hentai">Hentai Only</option>
+        </select>
+        <select id="wheel-type" class="px-2.5 py-1.5 rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)]">
+          <option value="All">All Formats</option>
+        </select>
+        <span id="wheel-pool-count" class="ml-auto text-xs text-[var(--text-muted)]">-- unwatched items</span>
+      </div>
+
+      <!-- Wheel Canvas Area -->
+      <div id="wheel-container" class="py-4">
+        <div id="wheel-pointer"></div>
+        <canvas id="wheel-canvas" width="360" height="360" class="rounded-full shadow-2xl border-4 border-indigo-500/30"></canvas>
+      </div>
+
+      <!-- Spin Controls -->
+      <div class="flex items-center justify-center gap-3 pt-2">
+        <button type="button" id="btn-spin-wheel" class="px-8 py-3 text-sm font-bold rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-pink-500 hover:from-amber-600 hover:to-pink-600 text-white shadow-lg shadow-orange-500/30 transition-transform active:scale-95 flex items-center gap-2">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+          <span>Spin the Wheel!</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 4. WHEEL WINNER POPUP MODAL -->
+  <div id="winner-modal" class="fixed inset-0 z-60 hidden modal-backdrop flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-sm p-6 text-center animate-in space-y-4 border-2 border-amber-500/40">
+      <div class="w-16 h-16 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center mx-auto">
+        <i data-lucide="trophy" class="w-8 h-8"></i>
+      </div>
+      <div>
+        <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Winner Selected</span>
+        <h3 id="winner-title" class="text-xl font-bold font-display text-[var(--text-primary)] mt-1">Title Name</h3>
+        <p id="winner-meta" class="text-xs text-[var(--text-muted)] mt-1">Anime • 2 Seasons • 2024</p>
+      </div>
+      <div class="flex flex-col gap-2 pt-2">
+        <button type="button" id="btn-winner-watch-now" class="w-full py-2.5 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-1.5 transition-colors">
+          <i data-lucide="play" class="w-4 h-4"></i>
+          <span>Mark as Currently Watching</span>
+        </button>
+        <button type="button" id="btn-winner-search-google" class="w-full py-2 text-xs font-semibold rounded-lg bg-[var(--bg-surface-elevated)] hover:bg-[var(--bg-surface-hover)] text-[var(--text-primary)] flex items-center justify-center gap-1.5 transition-colors">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <span>Open Portal (MAL / IMDb / MissAV / HentaiHaven)</span>
+        </button>
+        <button type="button" class="btn-close-winner text-xs text-[var(--text-muted)] hover:underline pt-1">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. BACKUP & EXPORT MODAL -->
+  <div id="backup-modal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-md p-6 animate-in space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
+        <h2 class="text-sm font-bold text-[var(--text-primary)] flex items-center gap-1.5">
+          <i data-lucide="database" class="w-4 h-4 text-indigo-400"></i>
+          <span>Data Backup & Export</span>
+        </h2>
+        <button type="button" class="btn-close-backup p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)]" aria-label="Close Backup Modal">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <!-- Export JSON -->
+        <a href="/api/export?format=json" download class="w-full p-3 rounded-lg bg-[var(--bg-surface-elevated)] hover:bg-[var(--bg-surface-hover)] border border-[var(--border-subtle)] flex items-center justify-between text-left transition-colors">
+          <div>
+            <span class="text-xs font-bold text-[var(--text-primary)] block">Export Full JSON Backup</span>
+            <span class="text-[11px] text-[var(--text-muted)]">Includes all ratings, tags, alt titles and seasons</span>
+          </div>
+          <i data-lucide="file-json" class="w-5 h-5 text-indigo-400"></i>
+        </a>
+
+        <!-- Export CSV -->
+        <a href="/api/export?format=csv" download class="w-full p-3 rounded-lg bg-[var(--bg-surface-elevated)] hover:bg-[var(--bg-surface-hover)] border border-[var(--border-subtle)] flex items-center justify-between text-left transition-colors">
+          <div>
+            <span class="text-xs font-bold text-[var(--text-primary)] block">Export Spreadsheet CSV</span>
+            <span class="text-[11px] text-[var(--text-muted)]">Open in Excel or Google Sheets</span>
+          </div>
+          <i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-400"></i>
+        </a>
+
+        <!-- Import JSON Backup -->
+        <div class="pt-2 border-t border-[var(--border-subtle)]">
+          <span class="text-xs font-semibold text-[var(--text-secondary)] block mb-1.5">Import / Restore Backup</span>
+          <input type="file" id="import-file-input" accept=".json" class="block w-full text-xs text-[var(--text-muted)] file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700">
+        </div>
+
+        <!-- Clean Duplicates Tool -->
+        <div class="pt-2 border-t border-[var(--border-subtle)]">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <span class="text-xs font-bold text-[var(--text-primary)] block">Clean Duplicate Entries</span>
+              <span class="text-[11px] text-[var(--text-muted)]">Scan and safely merge redundant title records</span>
+            </div>
+            <button type="button" id="btn-clean-duplicates" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 transition-colors whitespace-nowrap flex items-center gap-1">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+              <span>Clean Library</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. KEYBOARD SHORTCUTS MODAL -->
+  <div id="shortcuts-modal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-sm p-6 animate-in space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
+        <h2 class="text-sm font-bold text-[var(--text-primary)]">Keyboard Shortcuts</h2>
+        <button type="button" class="btn-close-shortcuts p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)]" aria-label="Close Shortcuts Modal">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="space-y-2 text-xs">
+        <div class="flex items-center justify-between py-1 border-b border-[var(--border-subtle)]">
+          <span class="text-[var(--text-secondary)]">Search Media</span>
+          <kbd class="px-2 py-0.5 rounded bg-[var(--bg-surface-elevated)] font-mono text-[11px] border border-[var(--border-subtle)]">/</kbd>
+        </div>
+        <div class="flex items-center justify-between py-1 border-b border-[var(--border-subtle)]">
+          <span class="text-[var(--text-secondary)]">Add New Entry</span>
+          <kbd class="px-2 py-0.5 rounded bg-[var(--bg-surface-elevated)] font-mono text-[11px] border border-[var(--border-subtle)]">N</kbd>
+        </div>
+        <div class="flex items-center justify-between py-1 border-b border-[var(--border-subtle)]">
+          <span class="text-[var(--text-secondary)]">Lucky Wheel</span>
+          <kbd class="px-2 py-0.5 rounded bg-[var(--bg-surface-elevated)] font-mono text-[11px] border border-[var(--border-subtle)]">W</kbd>
+        </div>
+        <div class="flex items-center justify-between py-1 border-b border-[var(--border-subtle)]">
+          <span class="text-[var(--text-secondary)]">Grid View</span>
+          <kbd class="px-2 py-0.5 rounded bg-[var(--bg-surface-elevated)] font-mono text-[11px] border border-[var(--border-subtle)]">G</kbd>
+        </div>
+        <div class="flex items-center justify-between py-1 border-b border-[var(--border-subtle)]">
+          <span class="text-[var(--text-secondary)]">Table View</span>
+          <kbd class="px-2 py-0.5 rounded bg-[var(--bg-surface-elevated)] font-mono text-[11px] border border-[var(--border-subtle)]">T</kbd>
+        </div>
+        <div class="flex items-center justify-between py-1">
+          <span class="text-[var(--text-secondary)]">Close Modals</span>
+          <kbd class="px-2 py-0.5 rounded bg-[var(--bg-surface-elevated)] font-mono text-[11px] border border-[var(--border-subtle)]">Esc</kbd>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" role="status" aria-live="polite"></div>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
